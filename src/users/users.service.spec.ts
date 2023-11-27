@@ -43,11 +43,13 @@ describe('UsersService', () => {
       password: 'test',
     } as User;
     jest.spyOn(repository, 'create').mockReturnValueOnce(user as never);
-    jest.spyOn(repository, 'save');
+    jest.spyOn(repository, 'save').mockReturnValueOnce(user as never);
 
-    await service.create(dto);
+    const response = await service.create(dto);
 
     expect(repository.create).toHaveBeenCalledWith(dto);
     expect(repository.save).toHaveBeenCalledWith(user);
+    expect(response.email).toBe('test@gmail.com');
+    expect(response.password).toBeUndefined();
   });
 });

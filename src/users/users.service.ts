@@ -11,9 +11,13 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
   async create(createUserDto: CreateUserDto): Promise<User> {
-    return this.usersRepository.save(
+    const response = await this.usersRepository.save(
       this.usersRepository.create(createUserDto),
     );
+
+    Reflect.deleteProperty(response, 'password');
+
+    return response;
   }
 
   async exist(email: string): Promise<boolean> {
