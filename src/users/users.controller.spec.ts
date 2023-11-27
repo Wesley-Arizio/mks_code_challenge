@@ -59,6 +59,8 @@ describe('UsersController', () => {
     jest.spyOn(service, 'exist').mockResolvedValueOnce(true);
     jest.spyOn(service, 'create');
 
+    expect.assertions(5);
+
     try {
       await controller.create(new CreateUserDto('test@email.com', 'test'));
     } catch (e) {
