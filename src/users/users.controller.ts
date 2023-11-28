@@ -15,7 +15,6 @@ export class UsersController {
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    // TODO - validate email
     const exists = await this.usersService.exist(createUserDto.email);
 
     if (exists) {
