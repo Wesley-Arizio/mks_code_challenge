@@ -6,6 +6,7 @@ import { MoviesRepositoryFake } from './util/test';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { NotFoundException, HttpStatus } from '@nestjs/common';
 
 describe('MoviesService', () => {
   let service: MoviesService;
@@ -55,6 +56,19 @@ describe('MoviesService', () => {
     expect(response).toStrictEqual(movie);
   });
 
+  it('should throw NotFoundException if movie with given id does not exist', async () => {
+    jest.spyOn(repository, 'findOneBy').mockReturnValueOnce(null);
+    expect.assertions(4);
+    try {
+      await service.findOne('id');
+    } catch (e) {
+      expect(e).toBeInstanceOf(NotFoundException);
+      expect((e as NotFoundException).getStatus()).toBe(HttpStatus.NOT_FOUND);
+      expect((e as NotFoundException).message).toBe('Movie not found');
+    }
+    expect(repository.findOneBy).toHaveBeenCalledWith({ id: 'id' });
+  });
+
   it('should be able to list movies with pagination', async () => {
     const movies = [
       { title: 'Joker', description: 'lorem ipsum...' } as Movie as never,
@@ -78,7 +92,23 @@ describe('MoviesService', () => {
     const updateDTO = new UpdateMovieDto('iron man', 'lorem ipsum...');
     const response = await service.update('id', updateDTO);
     expect(repository.update).toHaveBeenCalledWith({ id: 'id' }, updateDTO);
-    expect(response.affected).toStrictEqual(1);
+    expect(response).toStrictEqual(updateDTO);
+  });
+
+  it('should throw NotFoundException if movie to update does not exist', async () => {
+    jest
+      .spyOn(repository, 'update')
+      .mockReturnValueOnce({ affected: 0 } as UpdateResult as never);
+    const updateDTO = new UpdateMovieDto('iron man', 'lorem ipsum...');
+    expect.assertions(4);
+    try {
+      await service.update('id', updateDTO);
+    } catch (e) {
+      expect(e).toBeInstanceOf(NotFoundException);
+      expect((e as NotFoundException).getStatus()).toBe(HttpStatus.NOT_FOUND);
+      expect((e as NotFoundException).message).toBe('Movie not found');
+    }
+    expect(repository.update).toHaveBeenCalledWith({ id: 'id' }, updateDTO);
   });
 
   it('should be able to delete a movie by id', async () => {
@@ -87,6 +117,20 @@ describe('MoviesService', () => {
       .mockResolvedValueOnce({ affected: 1 } as DeleteResult);
     const response = await service.remove('id');
     expect(repository.delete).toHaveBeenCalledWith({ id: 'id' });
-    expect(response.affected).toBe(1);
+    expect(response).toStrictEqual({ deleted: true });
+  });
+
+  it('should throw NotFoundException if movie to delete does not exist', async () => {
+    jest
+      .spyOn(repository, 'delete')
+      .mockResolvedValueOnce({ affected: 0 } as DeleteResult);
+    try {
+      await service.remove('id');
+    } catch (e) {
+      expect(e).toBeInstanceOf(NotFoundException);
+      expect((e as NotFoundException).getStatus()).toBe(HttpStatus.NOT_FOUND);
+      expect((e as NotFoundException).message).toBe('Movie not found');
+    }
+    expect(repository.delete).toHaveBeenCalledWith({ id: 'id' });
   });
 });

@@ -7,7 +7,6 @@ import { MoviesRepositoryFake } from './util/test';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { HttpStatus, NotFoundException } from '@nestjs/common';
 import { UpdateMovieDto } from './dto/update-movie.dto';
-import { DeleteResult, UpdateResult } from 'typeorm';
 
 describe('MoviesController', () => {
   let controller: MoviesController;
@@ -56,7 +55,7 @@ describe('MoviesController', () => {
     expect(response).toStrictEqual(movies);
   });
 
-  it('should be able to get movie by id', async () => {
+  it('should be able to find movie by id', async () => {
     const movie = {
       title: 'iron man 1',
       description: 'lorem ipsum...',
@@ -69,7 +68,9 @@ describe('MoviesController', () => {
   });
 
   it('should throw NotFoundException if movie is not found', async () => {
-    jest.spyOn(service, 'findOne').mockResolvedValueOnce(null);
+    jest.spyOn(service, 'findOne').mockImplementationOnce(async () => {
+      throw new NotFoundException('Movie not found');
+    });
     expect.assertions(4);
     try {
       await controller.findOne('id');
@@ -86,9 +87,7 @@ describe('MoviesController', () => {
       title: 'iron man',
       description: 'lorem ipsum...',
     } as UpdateMovieDto;
-    jest
-      .spyOn(service, 'update')
-      .mockResolvedValueOnce({ affected: 1 } as UpdateResult);
+    jest.spyOn(service, 'update').mockResolvedValueOnce(updateDTO);
     const response = await controller.update('id', updateDTO);
     expect(response).toStrictEqual(updateDTO);
     expect(service.update).toHaveBeenCalledWith('id', updateDTO);
@@ -99,9 +98,9 @@ describe('MoviesController', () => {
       title: 'iron man',
       description: 'lorem ipsum...',
     } as UpdateMovieDto;
-    jest
-      .spyOn(service, 'update')
-      .mockResolvedValueOnce({ affected: 0 } as UpdateResult);
+    jest.spyOn(service, 'update').mockImplementationOnce(async () => {
+      throw new NotFoundException('Resource not found');
+    });
 
     expect.assertions(4);
 
@@ -116,18 +115,16 @@ describe('MoviesController', () => {
   });
 
   it('should be able to delete a movie by id', async () => {
-    jest
-      .spyOn(service, 'remove')
-      .mockResolvedValueOnce({ affected: 1 } as DeleteResult);
+    jest.spyOn(service, 'remove').mockResolvedValueOnce({ deleted: true });
     const response = await controller.remove('id');
     expect(response).toStrictEqual({ deleted: true });
     expect(service.remove).toHaveBeenCalledWith('id');
   });
 
   it('should throw NotFoundException if movie is not found when deleting it', async () => {
-    jest
-      .spyOn(service, 'remove')
-      .mockResolvedValueOnce({ affected: 0 } as DeleteResult);
+    jest.spyOn(service, 'remove').mockImplementationOnce(async () => {
+      throw new NotFoundException('Resource not found');
+    });
 
     expect.assertions(4);
     try {

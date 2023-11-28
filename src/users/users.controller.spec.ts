@@ -5,7 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersRepositoryFake } from './util/test';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -29,7 +29,6 @@ describe('UsersController', () => {
   });
 
   it('should return a new user', async () => {
-    jest.spyOn(service, 'exist').mockResolvedValueOnce(false);
     jest
       .spyOn(service, 'create')
       .mockImplementationOnce(({ email, password }) => {
@@ -44,7 +43,6 @@ describe('UsersController', () => {
       new CreateUserDto('test@email.com', 'test'),
     );
 
-    expect(service.exist).toHaveBeenCalledWith('test@email.com');
     expect(service.create).toHaveBeenCalledWith(
       new CreateUserDto('test@email.com', expect.any(String)),
     );
@@ -56,20 +54,21 @@ describe('UsersController', () => {
   });
 
   it('should throw error if user already exists', async () => {
-    jest.spyOn(service, 'exist').mockResolvedValueOnce(true);
-    jest.spyOn(service, 'create');
+    // Simulating that the service threw this error, the service already has unit test
+    jest.spyOn(service, 'create').mockImplementationOnce(async () => {
+      throw new BadRequestException('Invalid credentials');
+    });
 
-    expect.assertions(5);
+    expect.assertions(4);
 
     try {
       await controller.create(new CreateUserDto('test@email.com', 'test'));
     } catch (e) {
       expect(e).toBeInstanceOf(HttpException);
       expect((e as HttpException).getStatus()).toBe(HttpStatus.BAD_REQUEST);
-      expect((e as HttpException).getResponse()).toBe('Invalid credentials');
+      expect((e as HttpException).message).toBe('Invalid credentials');
     }
 
-    expect(service.exist).toHaveBeenCalledWith('test@email.com');
-    expect(service.create).toHaveBeenCalledTimes(0);
+    expect(service.create).toHaveBeenCalledTimes(1);
   });
 });

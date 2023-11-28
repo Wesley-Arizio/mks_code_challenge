@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  NotFoundException,
   UseGuards,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
@@ -32,13 +31,7 @@ export class MoviesController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const movie = await this.moviesService.findOne(id);
-
-    if (!movie) {
-      throw new NotFoundException('Movie not found');
-    }
-
-    return movie;
+    return this.moviesService.findOne(id);
   }
 
   @Patch(':id')
@@ -46,23 +39,11 @@ export class MoviesController {
     @Param('id') id: string,
     @Body() updateMovieDto: UpdateMovieDto,
   ) {
-    const { affected } = await this.moviesService.update(id, updateMovieDto);
-
-    if (affected == 0) {
-      throw new NotFoundException('Resource not found');
-    }
-
-    return updateMovieDto;
+    return this.moviesService.update(id, updateMovieDto);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const { affected } = await this.moviesService.remove(id);
-
-    if (affected == 0) {
-      throw new NotFoundException('Resource not found');
-    }
-
-    return { deleted: true };
+    return this.moviesService.remove(id);
   }
 }
