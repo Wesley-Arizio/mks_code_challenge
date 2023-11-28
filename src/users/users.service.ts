@@ -23,4 +23,11 @@ export class UsersService {
   async exist(email: string): Promise<boolean> {
     return this.usersRepository.exist({ where: { email } });
   }
+
+  async findUserWithPassword(email: string): Promise<User> {
+    return this.usersRepository.findOne({
+      where: { email },
+      select: { password: true },
+    });
+  }
 }
