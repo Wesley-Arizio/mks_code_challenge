@@ -1,22 +1,29 @@
-import { IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateMovieDto {
+export class MovieDto {
   @ApiProperty({
     required: true,
+    description: 'unique identifier of the movie',
+    type: 'string',
+  })
+  id: string;
+
+  @ApiProperty({
+    required: true,
+    type: 'string',
     description: 'title of the movie',
   })
-  @IsNotEmpty()
   title: string;
 
   @ApiProperty({
     required: true,
+    type: 'string',
     description: 'sinopse of the movie (may contain spoilers)',
   })
-  @IsNotEmpty()
   description: string;
 
-  constructor(title: string, description: string) {
+  constructor(id: string, title: string, description: string) {
+    this.id = id;
     this.title = title;
     this.description = description;
   }
