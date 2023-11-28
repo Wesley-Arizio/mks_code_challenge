@@ -3,6 +3,7 @@ import { UserHttpModule } from './users-http.module';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { MoviesHttpModule } from './movies-http.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { MoviesHttpModule } from './movies-http.module';
     UserHttpModule,
     DatabaseModule,
     MoviesHttpModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
