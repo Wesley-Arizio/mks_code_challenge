@@ -117,7 +117,7 @@ describe('MoviesController', () => {
   it('should be able to delete a movie by id', async () => {
     jest.spyOn(service, 'remove').mockResolvedValueOnce({ deleted: true });
     const response = await controller.remove('id');
-    expect(response).toStrictEqual({ deleted: true });
+    expect(response).toBe(true);
     expect(service.remove).toHaveBeenCalledWith('id');
   });
 
