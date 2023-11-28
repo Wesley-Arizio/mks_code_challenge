@@ -5,7 +5,7 @@ export class PasswordHandler {
     return bcrypt.hashSync(pass, bcrypt.genSaltSync(saltRounds));
   }
 
-  static compare(plain_text: string, hash: string): boolean {
-    return bcrypt.compareSync(plain_text, hash);
+  static compare(plainText: string, hash: string): boolean {
+    return bcrypt.compareSync(plainText, hash);
   }
 }
